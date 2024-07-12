@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: qa
+  name: jenkins-setup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins-setup
+  template:
+    metadata:
+      labels:
+        app: jenkins-setup
+    spec:
+      containers:
+      - name: jenkins-setup
+        image: mohan143143/jenkins-setup:test6
+        ports:
+        - containerPort: 80  # Assuming your application listens on port 80 inside the container
+        env:
+        - name: HTTPD_PREFIX
+          value: "/usr/local/apache2"
+        - name: HTTPD_VERSION
+          value: "2.4.61"
+        - name: HTTPD_SHA256
+          value: "ea8ba86fd95bd594d15e46d25ac5bbda82ae0c9122ad93998cc539c133eaceb6"
+        command: ["httpd-foreground"]  # Command to start your application
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: qa
+  name: jenkins-setup-service
+spec:
+  selector:
+    app: jenkins-setup
+  ports:
+  - protocol: TCP
+    port: 8081  # Exposed port on the Service
+    targetPort: 80  # Port your application listens on inside the container
+  type: LoadBalancer  # Exposes the Service using a cloud provider's load balancer
